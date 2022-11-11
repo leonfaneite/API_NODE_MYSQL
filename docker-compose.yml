@@ -1,0 +1,51 @@
+version: '3.1'
+
+services:
+
+  mysql:   
+
+    build:
+      
+      context: ./bd_cne  #indica la ruta del Dockerfile para ejecutar
+    
+    
+    volumes:
+      - ./bd_cne:/docker-entrypoint-initdb.d/   #ayuda con la creacion de persistencia desde el host local
+
+   
+    environment:
+      - MYSQL_DATABASE=bd_cne
+      - MYSQL_ROOT_PASSWORD=123456 
+    
+    command: [mysqld, --default-authentication-plugin=mysql_native_password, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all, --max-connections=1001] #comando genera el uso de la autenticacion como en las versioens de mysql anteriorres , permite la colocacion de password en el comando 
+
+    
+    ports:
+      - 3306:3306
+
+    restart: unless-stopped 
+
+    container_name: bd_cne
+
+    networks:
+      -  my_net #crear una red interna donde los diferentes containers estan comunicados
+    
+    
+
+  nodejs:
+      build:
+        context: ./src
+      image: nodejs
+      container_name: api_cne
+      restart: unless-stopped
+      ports:
+        - 3000:3000
+      
+      networks:
+      -  my_net
+
+
+
+networks:
+  my_net:
+    driver: bridge
